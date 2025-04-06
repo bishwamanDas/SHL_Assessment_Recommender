@@ -21,8 +21,8 @@ SKILL_KEYWORDS = [
     "machine learning", "mongodb"
 ]
 
-# --- Load model from Hugging Face Hub ---
-model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
+# --- Load model from Hugging Face Hub (lightweight version for Streamlit Cloud) ---
+model = SentenceTransformer("sentence-transformers/paraphrase-MiniLM-L3-v2")
 
 # --- Utilities ---
 def extract_query_domain(query):

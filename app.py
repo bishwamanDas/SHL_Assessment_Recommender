@@ -1,12 +1,6 @@
-# app.py
-
 import streamlit as st
 import pandas as pd
 from recommender import recommend  # Import the recommend function from recommender.py
-
-import os
-print("Current Working Directory:", os.getcwd())
-print("Files in directory:", os.listdir())
 
 # Page Setup
 st.set_page_config(page_title="SHL Assessment Recommender", layout="centered")
@@ -14,7 +8,7 @@ st.title("🔍 SHL Assessment Recommendation Engine")
 st.markdown("Enter a job description or required skills to get relevant SHL assessment suggestions.")
 
 # Input Box
-query = st.text_input("Job Description or Skills:", placeholder="e.g. Backend Python developer, 45 min test")
+query = st.text_input("Job Description or Skills:", placeholder="e.g. Java developer with SQL skills, 40 min test")
 
 # Recommendation Display Logic
 def display_recommendations(results: pd.DataFrame):
@@ -27,7 +21,7 @@ def display_recommendations(results: pd.DataFrame):
         with st.expander(f"{i+1}. {row['Assessment Name']}"):
             st.write(f"🔗 **Link:** [{row['URL']}]({row['URL']})")
             st.write(f"🧪 **Test Type:** {row['Test Type']}")
-            st.write(f"⏱️ **Duration:** {row['Duration']}")
+            st.write(f"⏱️ **Duration:** {row['Duration']} minutes")
             st.write(f"🖥️ **Remote Testing Support:** {row['Remote Testing Support']}")
             st.write(f"📊 **Adaptive/IRT Support:** {row['Adaptive/IRT Support']}")
 
@@ -37,8 +31,9 @@ if st.button("Get Recommendations"):
         st.warning("⚠️ Please enter a valid query.")
     else:
         try:
-            results = recommend(query, top_n=10)
-            display_recommendations(results)
+            with st.spinner("🔍 Searching for the most relevant assessments..."):
+                results = recommend(query, top_n=10)
+                display_recommendations(results)
         except Exception as e:
             st.error(f"❗ Something went wrong: {e}")
 
