@@ -21,9 +21,8 @@ SKILL_KEYWORDS = [
     "machine learning", "mongodb"
 ]
 
-# --- Load model from local directory ---
-model_path = os.path.join(os.path.dirname(__file__), 'all-MiniLM-L6-v2')
-model = SentenceTransformer(model_path)
+# --- Load model from Hugging Face Hub ---
+model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
 
 # --- Utilities ---
 def extract_query_domain(query):
