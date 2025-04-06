@@ -4,6 +4,10 @@ import streamlit as st
 import pandas as pd
 from recommender import recommend  # Import the recommend function from recommender.py
 
+import os
+print("Current Working Directory:", os.getcwd())
+print("Files in directory:", os.listdir())
+
 # Page Setup
 st.set_page_config(page_title="SHL Assessment Recommender", layout="centered")
 st.title("🔍 SHL Assessment Recommendation Engine")
