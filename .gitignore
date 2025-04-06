@@ -1,0 +1,35 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+
+# VS Code settings
+.vscode/
+
+# PyCharm project settings
+.idea/
+
+# Mac & Windows junk files
+.DS_Store
+Thumbs.db
+
+# Python virtual environments
+env/
+venv/
+ENV/
+venv.bak/
+
+# Logs
+*.log
+
+# Streamlit cache
+.streamlit/
+
+# Excel backups
+~$*.xlsx
+
+# Model files (optional, use Git LFS instead)
+*.safetensors
