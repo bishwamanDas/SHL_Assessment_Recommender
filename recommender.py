@@ -1,11 +1,12 @@
 import pandas as pd
 import numpy as np
 import os
+import re
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
-import re
 
-# --- Keywords ---
+model = SentenceTransformer("all-MiniLM-L6-v2")
+
 DOMAIN_KEYWORDS = {
     "developer": ["java", "python", "developer", "software", "backend", "frontend", "programmer", "engineer"],
     "data": ["data", "analyst", "analytics", "sql", "machine learning", "statistics"],
@@ -21,10 +22,6 @@ SKILL_KEYWORDS = [
     "machine learning", "mongodb"
 ]
 
-# --- Load model from Hugging Face Hub (lightweight version for Streamlit Cloud) ---
-model = SentenceTransformer("sentence-transformers/paraphrase-MiniLM-L3-v2")
-
-# --- Utilities ---
 def extract_query_domain(query):
     query = query.lower()
     for domain, keywords in DOMAIN_KEYWORDS.items():
@@ -39,7 +36,6 @@ def extract_expected_duration(query):
     match = re.search(r'(\d+)\s*(min|minutes)', query.lower())
     return int(match.group(1)) if match else None
 
-# --- Load and preprocess data ---
 file_path = os.path.join(os.path.dirname(__file__), "assessments_data.xlsx")
 df = pd.read_excel(file_path)
 df.fillna("Unknown", inplace=True)
@@ -47,23 +43,19 @@ df.fillna("Unknown", inplace=True)
 df['Tags'] = df['Tags'].astype(str)
 df['tags_list'] = df['Tags'].apply(lambda x: [tag.strip().lower() for tag in x.split(",")])
 df['combined'] = df['Assessment Name'] + " " + df['Tags']
+df['embedding'] = df['combined'].apply(lambda text: model.encode(text, show_progress_bar=False))
 
-df['embedding'] = df['combined'].apply(lambda x: model.encode(x, convert_to_tensor=False))
-
-# --- Recommend Function ---
 def recommend(query, top_n=10):
     domain = extract_query_domain(query)
     skills = extract_skills(query)
     expected_duration = extract_expected_duration(query)
 
-    # Domain filter
     def match_domain(row):
-        combined = row['Assessment Name'].lower() + " " + row['Tags'].lower()
+        combined = (row['Assessment Name'] + " " + row['Tags']).lower()
         return any(word in combined for word in DOMAIN_KEYWORDS[domain]) if domain != "general" else True
 
     filtered_df = df[df.apply(match_domain, axis=1)].reset_index(drop=True)
 
-    # Skill filter
     def match_skill(row):
         text = (row['Assessment Name'] + " " + row['Tags']).lower()
         return any(skill in text for skill in skills)
@@ -72,7 +64,6 @@ def recommend(query, top_n=10):
     if not skill_df.empty:
         filtered_df = skill_df
 
-    # Duration filter (±15 mins)
     if expected_duration:
         filtered_df = filtered_df[
             filtered_df['Duration (in minutes)'].apply(lambda d: abs(d - expected_duration) <= 15)
@@ -88,19 +79,16 @@ def recommend(query, top_n=10):
             "Test Type": ""
         }])
 
-    # Embedding similarity
-    query_vec = model.encode(query, convert_to_tensor=False)
+    query_vector = model.encode(query, show_progress_bar=False).reshape(1, -1)
     emb_matrix = np.vstack(filtered_df['embedding'].values)
-    emb_scores = cosine_similarity([query_vec], emb_matrix)[0]
+    emb_scores = cosine_similarity(query_vector, emb_matrix)[0]
 
-    # Skill score
     def skill_score(row):
         text = (row['Assessment Name'] + " " + row['Tags']).lower()
         return sum(skill in text for skill in skills)
 
     skill_scores = filtered_df.apply(skill_score, axis=1)
 
-    # Duration score
     def duration_score(row):
         if expected_duration:
             diff = abs(row['Duration (in minutes)'] - expected_duration)
@@ -108,8 +96,6 @@ def recommend(query, top_n=10):
         return 0
 
     duration_scores = filtered_df.apply(duration_score, axis=1)
-
-    # Final score
     final_scores = 0.2 * emb_scores + 0.5 * skill_scores + 0.3 * duration_scores
     top_indices = np.argsort(-final_scores)[:top_n]
 

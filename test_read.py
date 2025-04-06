@@ -13,18 +13,18 @@ queries = [
 # Test each query
 for query in queries:
     print(f"\n🔍 Query: {query}")
-    
+
     # Get top 5 recommendations
     results = recommend(query, top_n=5)
-    
+
     if not results.empty:
-        # Show only the main columns
+        # Show relevant columns
         print(results[[
             "Assessment Name",
             "URL",
             "Remote Testing Support",
             "Adaptive/IRT Support",
-            "Duration",
+            "Duration (in minutes)",
             "Test Type"
         ]].to_string(index=False))
     else:
