@@ -7,7 +7,7 @@ recommender = SHLRecommender("assessments_data.xlsx")  # ✅ fixed filename
 
 # Streamlit UI
 st.set_page_config(page_title="SHL Assessment Recommender", page_icon="🧠")
-st.title("🔍 SHL Assessment Recommender (TF-IDF Based)")
+st.title("🔍 SHL Assessment Recommender ")
 
 # Input box for user query
 query = st.text_input("Enter job role, skill, or test requirement:")
