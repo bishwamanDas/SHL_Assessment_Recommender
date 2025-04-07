@@ -1,41 +1,31 @@
+# app.py
 import streamlit as st
-import pandas as pd
-from recommender import recommend  # Import the recommend function from recommender.py
+from recommender import SHLRecommender
 
-# Page Setup
-st.set_page_config(page_title="SHL Assessment Recommender", layout="centered")
-st.title("🔍 SHL Assessment Recommendation Engine")
-st.markdown("Enter a job description or required skills to get relevant SHL assessment suggestions.")
+# Initialize the recommender with the correct Excel file
+recommender = SHLRecommender("assessments_data.xlsx")  # ✅ fixed filename
 
-# Input Box
-query = st.text_input("Job Description or Skills:", placeholder="e.g. Java developer with SQL skills, 40 min test")
+# Streamlit UI
+st.set_page_config(page_title="SHL Assessment Recommender", page_icon="🧠")
+st.title("🔍 SHL Assessment Recommender (TF-IDF Based)")
 
-# Recommendation Display Logic
-def display_recommendations(results: pd.DataFrame):
-    if len(results) == 1 and results.iloc[0]["Assessment Name"] == "No relevant assessments found":
-        st.warning("❌ No relevant assessments found. Try rephrasing your query or using more specific skills or test durations.")
-        return
+# Input box for user query
+query = st.text_input("Enter job role, skill, or test requirement:")
 
-    st.markdown("### 📋 Top Recommended Assessments:")
-    for i, row in results.iterrows():
-        with st.expander(f"{i+1}. {row['Assessment Name']}"):
-            st.write(f"🔗 **Link:** [{row['URL']}]({row['URL']})")
-            st.write(f"🧪 **Test Type:** {row['Test Type']}")
-            st.write(f"⏱️ **Duration:** {row['Duration']} minutes")
-            st.write(f"🖥️ **Remote Testing Support:** {row['Remote Testing Support']}")
-            st.write(f"📊 **Adaptive/IRT Support:** {row['Adaptive/IRT Support']}")
+# Show results only when query is entered
+if query.strip():
+    results = recommender.recommend(query)
 
-# Button trigger
-if st.button("Get Recommendations"):
-    if not query.strip():
-        st.warning("⚠️ Please enter a valid query.")
+    if not results.empty:
+        st.subheader("📋 Top 10 Matching Assessments:")
+        for _, row in results.iterrows():
+            st.markdown(f"**📝 {row['Assessment Name']}**")
+            st.write(f"- 📍 Remote Testing: {row['Remote Testing Support']}")
+            st.write(f"- 📐 Adaptive/IRT: {row['Adaptive/IRT Support']}")
+            st.write(f"- ⏱️ Duration: {row['Duration']}")
+            st.write(f"- 📚 Test Type: {row['Test Type']}")
+            st.markdown("---")
     else:
-        try:
-            with st.spinner("🔍 Searching for the most relevant assessments..."):
-                results = recommend(query, top_n=10)
-                display_recommendations(results)
-        except Exception as e:
-            st.error(f"❗ Something went wrong: {e}")
-
-# Footer
-st.markdown("<hr><center>🚀 Built for the SHL AI Internship Challenge</center>", unsafe_allow_html=True)
+        st.warning("❗ No relevant assessments found. Try a broader or clearer query.")
+else:
+    st.info("💡 Please enter a job title, skills, or requirement above to see recommendations.")

@@ -1,7 +1,9 @@
-from recommender import recommend
-import pandas as pd
+from recommender import SHLRecommender
 
-# Sample queries to test the recommendation engine
+# Initialize the recommender with the correct file
+recommender = SHLRecommender("assessments_data.xlsx")
+
+# Sample queries
 queries = [
     "Hiring a Java backend developer",
     "Looking for data analyst with SQL and Excel",
@@ -10,21 +12,18 @@ queries = [
     "Finance and bookkeeping test for accountant"
 ]
 
-# Test each query
+# Run and print recommendations
 for query in queries:
     print(f"\n🔍 Query: {query}")
-
-    # Get top 5 recommendations
-    results = recommend(query, top_n=5)
+    results = recommender.recommend(query, top_k=5)
 
     if not results.empty:
-        # Show relevant columns
         print(results[[
             "Assessment Name",
             "URL",
             "Remote Testing Support",
             "Adaptive/IRT Support",
-            "Duration (in minutes)",
+            "Duration",
             "Test Type"
         ]].to_string(index=False))
     else:

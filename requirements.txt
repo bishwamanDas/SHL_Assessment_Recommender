@@ -1,21 +1,4 @@
-# --- Core Libraries ---
 pandas
-numpy
 scikit-learn
-openpyxl              # Excel support for pandas
-joblib                # Optional model persistence
-
-# --- NLP & Embedding ---
-sentence-transformers
-sentencepiece         # Tokenizer dependency
-keybert               # Optional for keyword extraction
-spacy                 # Used earlier / can be retained for fallback
-rapidfuzz             # Fuzzy matching (if needed)
-
-# --- Web & Parsing ---
-flask                 # For REST API endpoint
-requests
-beautifulsoup4        # HTML parsing (for scraping JDs, if needed)
-
-# --- Frontend / Demo UI ---
-streamlit             # Streamlit frontend (for demo deployment)
+streamlit
+openpyxl
