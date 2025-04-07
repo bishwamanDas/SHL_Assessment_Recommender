@@ -25,6 +25,7 @@ if query.strip():
             st.write(f"- 📐 Adaptive/IRT: {row['Adaptive/IRT Support']}")
             st.write(f"- ⏱️ Duration: {row['Duration']}")
             st.write(f"- 📚 Test Type: {row['Test Type']}")
+            st.write(f"- 🔗 URL: {row['URL']}")
             st.markdown("---")
     else:
         st.warning("❗ No relevant assessments found. Try a broader or clearer query.")
