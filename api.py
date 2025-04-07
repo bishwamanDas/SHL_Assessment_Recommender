@@ -1,40 +1,46 @@
-import streamlit as st
-import requests
+from fastapi import FastAPI, Query
+from fastapi.middleware.cors import CORSMiddleware
+from recommender import SHLRecommender
+import pandas as pd
 
-# FastAPI URL for recommendations (replace with your deployed FastAPI URL)
-API_URL = "https://shl-api-3t3h.onrender.com"
+app = FastAPI(title="SHL Assessment Recommendation API")
 
-# Streamlit UI setup
-st.set_page_config(page_title="SHL Assessment Recommender", page_icon="🧠")
-st.title("🔍 SHL Assessment Recommender")
+# Enable CORS for all domains
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all HTTP methods
+    allow_headers=["*"],  # Allows all headers
+)
 
-# Input box for user query
-query = st.text_input("Enter job role, skill, or test requirement:")
+# Initialize the recommender with the correct Excel file
+recommender = SHLRecommender("assessments_data.xlsx")
 
-# Function to fetch recommendations from FastAPI
-def get_recommendations_from_api(query):
-    url = f"{API_URL}?query={query}"
-    response = requests.get(url)
-    return response.json()  # Returns the response as a JSON
+@app.get("/")
+def read_root():
+    return {"message": "Welcome to the SHL Assessment Recommendation API!"}
 
-# Show results only when query is entered
-if query.strip():
-    # Fetch recommendations from FastAPI
-    results = get_recommendations_from_api(query)
+@app.get("/recommend")
+def get_recommendations(query: str = Query(..., description="Job role, skill, or test requirement")):
+    # Get recommendations from recommender
+    results_df = recommender.recommend(query)
 
-    # If results are returned, display them
-    if results['results']:
-        st.subheader("📋 Top 10 Matching Assessments:")
-        for result in results['results']:
-            st.markdown(f"**📝 {result['assessment_name']}**")
-            st.write(f"- 📍 Assessment Name: {result['assessment_name']}")
-            st.write(f"- 📍 Remote Testing: {result['remote_testing']}")
-            st.write(f"- 📐 Adaptive/IRT: {result['adaptive_irt']}")
-            st.write(f"- ⏱️ Duration: {result['duration']}")
-            st.write(f"- 📚 Test Type: {result['test_type']}")
-            st.write(f"- 🔗 URL: {result['url']}")
-            st.markdown("---")
-    else:
-        st.warning("❗ No relevant assessments found. Try a broader or clearer query.")
-else:
-    st.info("💡 Please enter a job title, skills, or requirement above to see recommendations.")
+    # Check if recommendations are found
+    if results_df.empty:
+        return {"message": "No recommendations found", "results": []}
+
+    # Format the results as a list of dictionaries for API response
+    results = []
+    for _, row in results_df.iterrows():
+        results.append({
+            "assessment_name": row["Assessment Name"],
+            "url": row["URL"],
+            "remote_testing": row["Remote Testing Support"],
+            "adaptive_irt": row["Adaptive/IRT Support"],
+            "duration": row["Duration"],
+            "test_type": row["Test Type"]
+        })
+
+    # Return the query and matching assessments
+    return {"query": query, "results": results}
