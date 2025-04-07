@@ -33,3 +33,4 @@ venv.bak/
 
 # Model files (optional, use Git LFS instead)
 *.safetensors
+all-MiniLM-L6-v2/
