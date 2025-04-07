@@ -17,6 +17,10 @@ app.add_middleware(
 # Initialize the recommender with the correct Excel file
 recommender = SHLRecommender("assessments_data.xlsx")
 
+@app.get("/")
+def read_root():
+    return {"message": "Welcome to the SHL Assessment Recommendation API!"}
+
 @app.get("/recommend")
 def get_recommendations(query: str = Query(..., description="Job role, skill, or test requirement")):
     # Get recommendations from recommender
