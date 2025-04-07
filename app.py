@@ -20,6 +20,7 @@ if query.strip():
         st.subheader("📋 Top 10 Matching Assessments:")
         for _, row in results.iterrows():
             st.markdown(f"**📝 {row['Assessment Name']}**")
+            st.write(f"- 📍 Assessment Name: {row['Assessment Name']}")
             st.write(f"- 📍 Remote Testing: {row['Remote Testing Support']}")
             st.write(f"- 📐 Adaptive/IRT: {row['Adaptive/IRT Support']}")
             st.write(f"- ⏱️ Duration: {row['Duration']}")
